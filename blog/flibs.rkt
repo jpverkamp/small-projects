@@ -1,8 +1,5 @@
 #lang racket
 
-(provide random-flib string->flib string->input run-flib repeat-string 
-         score-flib mutate breed run)
-
 ; generate a random flib
 ; a flib is a state machine of the form
 ;   0  1
