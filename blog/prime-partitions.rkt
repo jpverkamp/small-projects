@@ -1,6 +1,6 @@
 #lang racket
 
-(provide sopf kappa)
+(provide sopf kappa msopf mkappa)
 
 ; does m divide into n evenly?
 (define (divides? n m)
