@@ -4,7 +4,10 @@ import sys
 from collections import defaultdict as ddict
 
 def ip_to_int(ip):
-    return ip[0] * 16777216 + ip[1] * 65536 + ip[2] * 256 + ip[3]
+    try:
+        return ip[0] * 16777216 + ip[1] * 65536 + ip[2] * 256 + ip[3]
+    except:
+        return 0
 
 batch_mode = '--batch' in sys.argv
 if batch_mode: sys.argv.remove('--batch')
@@ -33,9 +36,10 @@ for file in files:
         fin = open(file, 'r')
 
     for line in fin:
-        ip = line.strip()
-        if not ip: continue
-        ip = map(int, ip.split('.'))
+        try:
+            ip = map(int, line.strip().split('.'))
+        except:
+            pass
 
         ip_int = ip_to_int(ip)
         answer = None
