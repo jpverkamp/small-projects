@@ -6,6 +6,9 @@ from collections import defaultdict as ddict
 def ip_to_int(ip):
     return ip[0] * 16777216 + ip[1] * 65536 + ip[2] * 256 + ip[3]
 
+batch_mode = '--batch' in sys.argv
+if batch_mode: sys.argv.remove('--batch')
+
 ip_file = 'GeoIPCountryWhois.csv'
 if '--ip' in sys.argv:
     ip = sys.argv.index('--ip')
@@ -40,10 +43,14 @@ for file in files:
                 answer = country
                 break
 
+        if not batch_mode:
+            print('%s,%s' % (ip, answer))
+
         countries[answer] += 1
 
     fin.close()
 
-for entry in sorted(countries.items()):
-    print('%s,%s' % entry)
+if batch_mode:
+    for entry in sorted(countries.items()):
+        print('%s,%s' % entry)
         
