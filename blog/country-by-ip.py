@@ -23,7 +23,7 @@ with open(ip_file, 'r') as fin:
         parts = [part.strip('"') for part in line.strip().split(',')]
         if len(parts) == 6:
             from_ip, to_ip, from_int, to_int, cc, country = parts
-            ipdb.append((from_int, to_int, country))
+            ipdb.append((int(from_int), int(to_int), country))
             
 countries = ddict(lambda : 0)
 for file in files:
@@ -35,6 +35,7 @@ for file in files:
     for line in fin:
         ip = line.strip()
         if not ip: continue
+        ip = map(int, ip.split('.'))
 
         ip_int = ip_to_int(ip)
         answer = None
@@ -44,7 +45,7 @@ for file in files:
                 break
 
         if not batch_mode:
-            print('%s,%s' % (ip, answer))
+            print('%s,%s' % (line.strip(), answer))
 
         countries[answer] += 1
 
