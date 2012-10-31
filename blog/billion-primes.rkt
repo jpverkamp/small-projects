@@ -7,6 +7,8 @@
          sum-primes-sieve-eratosthenes-multivector
          sum-primes-sieve-eratosthenes-bitvector
          sum-primes-sieve-atkin
+         sum-primes-sieve-atkin-bitvector
+         sum-primes-sieve-atkin-multivector
          sum-primes-sieve-sundaram)
 
 ; test if n divides m
@@ -157,6 +159,74 @@
     (cond
       [(= count n) sum]
       [(vector-ref v i)
+       (loop (+ i 2) (+ count 1) (+ sum i))]
+      [else
+       (loop (+ i 2) count sum)])))
+
+; sum the first n primes using the Sieve of Atkin
+; algorithm source: http://en.wikipedia.org/wiki/Sieve_of_Atkin
+(define (sum-primes-sieve-atkin-bitvector n)
+  (define-values (lo hi) (guess-nth-prime n))
+  (define v (make-bitvector hi #f))
+  ; add candidate primes
+  (for* ([x (in-range 1 (+ 1 (sqrt hi)))]
+         [y (in-range 1 (+ 1 (sqrt hi)))])
+    (define x2 (* x x))
+    (define y2 (* y y))
+    (let ([i (+ (* 4 x2) y2)])
+      (when (and (< i hi) (or (= 1 (remainder i 12))
+                               (= 5 (remainder i 12))))
+        (bitvector-set! v i (not (bitvector-ref v i)))))
+    (let ([i (+ (* 3 x2) y2)])
+      (when (and (< i hi) (= 7 (remainder i 12)))
+        (bitvector-set! v i (not (bitvector-ref v i)))))
+    (let ([i (- (* 3 x2) y2)])
+      (when (and (> x y) (< i hi) (= 11 (remainder i 12)))
+        (bitvector-set! v i (not (bitvector-ref v i))))))
+  ; remove composites
+  (for ([i (in-range 5 (+ 1 (sqrt hi)))])
+    (when (bitvector-ref v i)
+      (for ([k (in-range (* i i) hi (* i i))])
+        (bitvector-set! v k #f))))
+  ; report
+  (let loop ([i 5] [count 2] [sum 5])
+    (cond
+      [(= count n) sum]
+      [(bitvector-ref v i)
+       (loop (+ i 2) (+ count 1) (+ sum i))]
+      [else
+       (loop (+ i 2) count sum)])))
+
+; sum the first n primes using the Sieve of Atkin
+; algorithm source: http://en.wikipedia.org/wiki/Sieve_of_Atkin
+(define (sum-primes-sieve-atkin-multivector n)
+  (define-values (lo hi) (guess-nth-prime n))
+  (define v (make-multivector hi 100 #f))
+  ; add candidate primes
+  (for* ([x (in-range 1 (+ 1 (sqrt hi)))]
+         [y (in-range 1 (+ 1 (sqrt hi)))])
+    (define x2 (* x x))
+    (define y2 (* y y))
+    (let ([i (+ (* 4 x2) y2)])
+      (when (and (< i hi) (or (= 1 (remainder i 12))
+                               (= 5 (remainder i 12))))
+        (multivector-set! v i (not (multivector-ref v i)))))
+    (let ([i (+ (* 3 x2) y2)])
+      (when (and (< i hi) (= 7 (remainder i 12)))
+        (multivector-set! v i (not (multivector-ref v i)))))
+    (let ([i (- (* 3 x2) y2)])
+      (when (and (> x y) (< i hi) (= 11 (remainder i 12)))
+        (multivector-set! v i (not (multivector-ref v i))))))
+  ; remove composites
+  (for ([i (in-range 5 (+ 1 (sqrt hi)))])
+    (when (multivector-ref v i)
+      (for ([k (in-range (* i i) hi (* i i))])
+        (multivector-set! v k #f))))
+  ; report
+  (let loop ([i 5] [count 2] [sum 5])
+    (cond
+      [(= count n) sum]
+      [(multivector-ref v i)
        (loop (+ i 2) (+ count 1) (+ sum i))]
       [else
        (loop (+ i 2) count sum)])))
