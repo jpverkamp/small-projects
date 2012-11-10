@@ -39,7 +39,7 @@ for file in files:
         try:
             ip = map(int, line.strip().split('.'))
         except:
-            pass
+            continue
 
         ip_int = ip_to_int(ip)
         answer = None
