@@ -17,9 +17,17 @@ Find the difference between the sum of the squares of the first one hundred natu
 numbers and the square of the sum.
 |#
 (define (problem-0006 [n 100])
-  (- (sqr (for/sum ([i (in-range 1 (+ n 1))]) i))
-     (for/sum ([i (in-range 1 (+ n 1))]) (* i i))))
+  (define ls (range 1 (+ n 1)))
+  (- (square-of-sums ls)
+     (sum-of-squares ls)))
       
+; square the sum of a list
+(define (square-of-sums ls)
+  (sqr (apply + ls)))
+
+; sum the squares of a list
+(define (sum-of-squares ls)
+  (apply + (map sqr ls)))
+
 ; square a number
-(define (sqr n)
-  (* n n))
+(define (sqr x) (* x x))
