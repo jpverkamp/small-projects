@@ -7,11 +7,12 @@ we get 3, 5, 6 and 9. The sum of these multiples is 23.
 
 Find the sum of all the multiples of 3 or 5 below 1000.
 |#
-Find the sum of all the multiples of 3 or 5 below 1000.
-(define (problem-0001 [limit 1000])
+(define (problem-0001) (sum-divisibles 1000 '(3 5)))
+  
+; sum all numbers divisible by numbers in a given list up to a given limit
+(define (sum-divisibles limit nls)
   (for/sum ([i (in-range 1 limit)]
-            #:when (or (divides? i 3)
-                       (divides? i 5)))
+            #:when (ormap (lambda (j) (divides? i j)) nls))
     i))
 
 ; test if n evenly divides m
