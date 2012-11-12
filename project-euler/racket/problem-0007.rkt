@@ -5,26 +5,24 @@
 By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13,
 we can see that the 6th prime is 13.
 
-What is the 10 001st prime number?
+What is the 10,001st prime number?
 |#
-(define (problem-0007 [n 10001])
-  (define primes... (primes))
-  (for ([i (in-range (- n 1))]
-        [p (in-producer primes... #f)])
-    (void))
-  (primes...))
+(define (problem-0007)
+  (nth-prime 10001))
 
-; a generator for primes
-(define (primes [n 2])
-  (lambda ()
-    (let loop ()
-      (cond
-        [(prime? n) 
-         (set! n (+ n 1))
-         (- n 1)]
-        [else
-         (set! n (+ n 1))
-         (loop)]))))
+; return the nth prime
+(define (nth-prime n)
+  (let loop ([n n] [p 1])
+    (if (= n 0)
+        p
+        (loop (- n 1) (next-prime p)))))
+
+; return the next prime after a given number
+(define (next-prime n)
+  (let loop ([n (+ n 1)])
+    (if (prime? n)
+        n
+        (loop (+ n 1)))))
 
 ; test if n is prime by trial division
 (define (prime? n)
@@ -36,4 +34,3 @@ What is the 10 001st prime number?
 ; test if n divides m
 (define (divides? m n)
   (= 0 (remainder m n)))
-  
