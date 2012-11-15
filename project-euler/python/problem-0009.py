@@ -55,3 +55,7 @@ def pythagorean_sum_equals_nogen(n):
             c = math.sqrt(a * a + b * b) 
             if c == int(c) and a + b + c == n:
                 return a, b, c
+import time
+s = time.time()
+r = problem_0009()
+print '%0.3f seconds, answer = %s\n' % (time.time() - s, r)
