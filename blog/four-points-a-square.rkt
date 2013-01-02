@@ -27,7 +27,7 @@
    (apply = (cons 0 (take dists 4)))
    ; 8x identical distances for the sides
    (apply = (take (drop dists 4) 8))
-  ; 4x sqrt(2) * side for the diagonals
+   ; 4x sqrt(2) * side for the diagonals
    (apply = (cons (* (sqrt 2) (car (drop dists 4)))
                   (drop dists 12)))))
 
