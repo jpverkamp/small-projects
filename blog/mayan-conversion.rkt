@@ -51,7 +51,6 @@
     ; work forward from 1 jan 1970
     [(> days 0)
      (let loop ([days days] [year 1970] [month 1] [day 1])
-       ;(printf "~s  ~s-~s-~s\n" days year month day)
        (define d/y (if (leap-year? year) 366 365))
        (define d/m (if (and (leap-year? year) (= month 2))
                        29
