@@ -14,12 +14,15 @@
   (cycle-equal? (-> cycle? cycle? boolean?))
   (list-cycle-equal? (-> list? list? boolean?))))
 
+; ----- Cycle ADT -----
+
 ; Store a cycle as the current head and original (reset) head
-(define-struct cycle (current original))
+; Length is cached to make cycle-length amortized O(1)
+(define-struct cycle (len current original) #:mutable)
 
 ; Convert a list to a cycle
 (define (list->cycle ls)
-  (make-cycle ls ls))
+  (make-cycle #f ls ls))
 
 ; Convert a cycle to a list
 (define (cycle->list c)
@@ -36,16 +39,19 @@
 
 ; Return all but the first item of a cycle
 (define (cycle-tail c)
-  (if (null? (cycle-current c))
-      (make-cycle (cdr (cycle-original c)) (cycle-original c))
-      (make-cycle (cdr (cycle-current c)) (cycle-original c))))
+  (make-cycle 
+   (cycle-len c) 
+   (cdr ((if (null? (cycle-current c)) cycle-original cycle-current) c))
+   (cycle-original c)))
 
 (check-equal? (cycle-head (cycle-tail (list->cycle '(1)))) 1)
 (check-equal? (cycle-head (cycle-tail (list->cycle '(1 2 3)))) 2)
 
 ; Get the length of a cycle
 (define (cycle-length c)
-  (length (cycle-original c)))
+  (unless (cycle-len c)
+    (set-cycle-len! c (length (cycle-original c))))
+  (cycle-len c))
 
 (check-equal? (cycle-length (list->cycle '(1 2 3))) 3)
 
@@ -71,6 +77,8 @@
                             (cycle-tail
                              (cycle-tail
                               (cycle-tail (list->cycle '(1 2 3))))))))
+
+; ----- Compare cycles by checking all pairwise first positions -----
 
 ; Test if two cycles are equal
 (define (cycle-equal? c1 c2)
@@ -101,6 +109,8 @@
 (check-false (cycle-equal? (list->cycle '(1 1)) (list->cycle '(1 1 1 1))))
 (check-false (cycle-equal? (list->cycle '(1 2 3 4)) (list->cycle '(1 2 3 5))))
 
+; ----- Compare cycles by doubling one list and checking the other as a subset -----
+
 ; Check if p is a prefix of ls
 (define (prefix? ls p)
   (or (null? p)
@@ -124,3 +134,44 @@
 
 (check-false (list-cycle-equal? '(1 1) '(1 1 1 1)))
 (check-false (list-cycle-equal? '(1 2 3 4) '(1 2 3 5)))
+
+; ----- Compare cycles by lexically sorting cycles -----
+
+; Advance a cycle to the lexically minimum position
+(define (cycle-lexical-min c [< <] [= =])
+  ; Check if one cycle is less than another
+  (define (cycle-< c1 c2)
+    (let loop ([c1 c1] [c1-cnt (cycle-length c1)]
+               [c2 c2] [c2-cnt (cycle-length c2)])
+      (and (> c1-cnt 0)
+           (> c2-cnt 0)
+           (or (< (cycle-head c1) (cycle-head c2))
+               (and (= (cycle-head c1) (cycle-head c2))
+                    (loop (cycle-tail c1) (- c1-cnt 1)
+                          (cycle-tail c2) (- c2-cnt 1)))))))
+  
+  ; Lexically sort by storing minimum
+  (let loop ([min c] [c (cycle-tail c)])
+    (cond
+      [(cycle-reset? c) min]
+      [(cycle-< c min) (loop c (cycle-tail c))]
+      [else (loop min (cycle-tail c))])))
+
+(check-equal? (cycle->list (cycle-lexical-min (list->cycle '(1 2 3 4)))) '(1 2 3 4))
+(check-equal? (cycle->list (cycle-lexical-min (list->cycle '(3 4 1 2)))) '(1 2 3 4))
+(check-equal? (cycle->list (cycle-lexical-min (list->cycle '(1 2 2 1)))) '(1 1 2 2))
+(check-equal? (cycle->list (cycle-lexical-min (list->cycle '(2 1 1 2)))) '(1 1 2 2))
+(check-equal? (cycle->list (cycle-lexical-min (list->cycle '(1 1 1)))) '(1 1 1))
+
+; Compare cycles by lexical comparison
+(define (lexical-cycle-equal? c1 c2 [< <] [= =])
+  (equal? (cycle-take (cycle-length c1) (cycle-lexical-min c1 < =))
+          (cycle-take (cycle-length c2) (cycle-lexical-min c2 < =))))
+
+(check-true (lexical-cycle-equal? (list->cycle '(1 2 3 4 5)) (list->cycle '(1 2 3 4 5)) < =))
+(check-true (lexical-cycle-equal? (list->cycle '(1 2 3 4 5)) (list->cycle '(3 4 5 1 2)) < =))
+(check-true (lexical-cycle-equal? (list->cycle '(1 2 2 1)) (list->cycle '(2 1 1 2)) < =))
+
+(check-false (cycle-equal? (list->cycle '(1 1)) (list->cycle '(1 1 1 1))))
+(check-false (lexical-cycle-equal? (list->cycle '(1 2)) (list->cycle '(1 2 3 4)) < =))
+(check-false (lexical-cycle-equal? (list->cycle '(1 2 3 4)) (list->cycle '(1 2 3 5)) < =))
