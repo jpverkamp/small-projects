@@ -2,6 +2,18 @@
 
 (require rackunit)
 
+(provide
+ (contract-out 
+  (list->cycle (-> list? cycle?))
+  (cycle->list (-> cycle? list?))
+  (cycle-head (-> cycle? any))
+  (cycle-tail (-> cycle? cycle?))
+  (cycle-length (-> cycle? boolean?))
+  (cycle-take (-> (and/c integer? positive?) cycle? list?))
+  (cycle-reset? (-> cycle? boolean?))
+  (cycle-equal? (-> cycle? cycle? boolean?))
+  (list-cycle-equal? (-> list? list? boolean?))))
+
 ; Store a cycle as the current head and original (reset) head
 (define-struct cycle (current original))
 
@@ -59,16 +71,6 @@
                             (cycle-tail
                              (cycle-tail
                               (cycle-tail (list->cycle '(1 2 3))))))))
-
-(define c (list->cycle '(1 2 3 4 5)))
-#|
-> (define c (list->cycle '(1 2 3 4 5)))
-> (let loop ([i 0] [c c])
-    (if (= i 13)
-        '()
-        (cons (cycle-car c) (loop (+ i 1) (cycle-cdr c)))))
-'(1 2 3 4 5 1 2 3 4 5 1 2 3)
-|#
 
 ; Test if two cycles are equal
 (define (cycle-equal? c1 c2)
