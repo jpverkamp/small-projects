@@ -15,7 +15,7 @@
 
 ; load a word list to score from
 ;(define fn "word-list-short.txt")
-(define fn "C:/Users/John-Paul/Desktop/dict.txt")
+(define fn "dict.txt")
 (define word-list
   (with-input-from-file fn
     (lambda () (for/vector ([word (in-lines)]) (string-downcase word)))))
