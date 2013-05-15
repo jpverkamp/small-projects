@@ -172,6 +172,6 @@
 (check-true (lexical-cycle-equal? (list->cycle '(1 2 3 4 5)) (list->cycle '(3 4 5 1 2)) < =))
 (check-true (lexical-cycle-equal? (list->cycle '(1 2 2 1)) (list->cycle '(2 1 1 2)) < =))
 
-(check-false (cycle-equal? (list->cycle '(1 1)) (list->cycle '(1 1 1 1))))
+(check-false (lexical-cycle-equal? (list->cycle '(1 1)) (list->cycle '(1 1 1 1))))
 (check-false (lexical-cycle-equal? (list->cycle '(1 2)) (list->cycle '(1 2 3 4)) < =))
 (check-false (lexical-cycle-equal? (list->cycle '(1 2 3 4)) (list->cycle '(1 2 3 5)) < =))
