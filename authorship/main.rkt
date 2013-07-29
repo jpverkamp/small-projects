@@ -17,10 +17,10 @@
 (define current-author-regexp (make-parameter #f))
 
 (define functions
-  (list #;stop-word-frequency
-        #;n-gram-frequency
+  (list stop-word-frequency
+        n-gram-frequency
         word-rank
-        #;word-lengths
+        word-lengths
         ))
   
 (define (load-file file functions)
