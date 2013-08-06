@@ -13,4 +13,7 @@
     (define len (string-length word))
     (hash-set! counts len (add1 (hash-ref counts len 0))))
   
-  counts)
+  ; Normalize
+  (define total (* 1.0 (for/sum ([(k v) (in-hash counts)]) v)))
+  (for/hash ([(k v) (in-hash counts)])
+    (values k (/ v total))))
