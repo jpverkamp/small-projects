@@ -14,15 +14,15 @@
   (dynamic-wind
    void
    (λ ()
-     (thread
-      (λ ()
-        (gzip-through-ports (current-input-port) pipe-to #f (current-seconds))
-        (close-output-port pipe-to)))
-     (parameterize ([current-input-port pipe-from])
-       (thunk)))
+     (define t (thread (λ () (gzip-through-ports pipe-from (current-output-port) #f (current-seconds)))))
+     (parameterize ([current-output-port pipe-to])
+       (thunk))
+     (close-output-port pipe-to)
+     (thread-wait t))
    (λ ()
      (unless (port-closed? pipe-to) (close-output-port pipe-to))
-     (unless (port-closed? pipe-from) (close-input-port pipe-from)))))
+     (unless (port-closed? pipe-from) (close-input-port pipe-from))))
+  (void))
 
 (provide/contract 
  (with-gunzip 
