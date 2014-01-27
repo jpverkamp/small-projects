@@ -3,7 +3,7 @@
 (require racket/splicing)
 
 ; Combine two hashes with numeric values by adding the values
-(define/contract (merge-hashes h1 h2)
+(define (merge-hashes h1 h2)
   (define h (hash-copy h1))
   (for ([(k v) (in-hash h2)])
     (hash-update! h k (curry + v) v))
