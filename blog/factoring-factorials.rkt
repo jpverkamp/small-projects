@@ -6,22 +6,25 @@
 (define (merge-hashes h1 h2)
   (define h (hash-copy h1))
   (for ([(k v) (in-hash h2)])
-    (hash-update! h k (curry + v) v))
+    (hash-update! h k (curry + v) 0))
   h)
 
 ; Memoized version of prime factorization
 (splicing-let ([cache (make-hash)])
+  (hash-set! cache 1 (hash 1 1))
+  (hash-set! cache 2 (hash 2 1))
   (define (prime-factors n)
     (hash-ref! 
      cache n
-     (or
-      (for/first ([i (in-range 2 (sqrt n))] #:when (zero? (remainder n i)))
-        (merge-hashes (prime-factors i) (prime-factors (/ n i))))
-      (hash n 1)))))
+     (thunk
+       (or
+        (for/first ([i (in-range 2 (add1 (sqrt n)))] #:when (zero? (remainder n i)))
+          (merge-hashes (prime-factors i) (prime-factors (/ n i))))
+        (hash n 1))))))
 
-; Factor n! without actually calculating the factorial first
+; actor n! without actually calculating the factorial first
 (define (factor-factorial n)
-  (for/fold ([factors (hash)]) ([i (in-range 1 (+ n 1))])
+  (for/fold ([factors (hash)]) ([i (in-range 2 (+ n 1))])
     (merge-hashes factors (prime-factors i))))
 
 ; Print out a factorial list (hash of primes to their power)
