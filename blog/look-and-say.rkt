@@ -22,6 +22,13 @@
        [else
         (list* (list i v) (count (rest ls) 1 (first ls)))]))))
 
+; Create a look and say sequence with regular expressions instead of lists
+(define (look-and-say/regex str)
+  (regexp-replace* 
+   #px"(.)(\\1*)" 
+   str 
+   (λ (match block repeat) (~a (string-length match) block))))
+
 ; Make an infinite sequence that generates look-and-see lists
 ; Use the current look-and-say list itself as both the key and value
 (define (in-look-and-say [ls '(1)])
