@@ -1,5 +1,7 @@
 #lang racket
 
+(provide (all-defined-out))
+
 (require 2htdp/image
          images/flomap)
 
@@ -80,7 +82,7 @@
      (apply above (map (curry apply beside) images))]))
 
 ; Create a fractal of increasingly smaller procesdural invaders
-(define (fractal-invaders width height #:highlights? [highlights? #f])
+(define (random-invaders width height #:highlights? [highlights? #f])
   (struct placed-invader (invader top left size))
   
   ; Minimum size is 7 to allow for a minimum margin of 1
