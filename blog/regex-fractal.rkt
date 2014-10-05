@@ -57,14 +57,23 @@
    ; 3 groups = RGB
    'by-length
    (λ (m)
+     (define (nth-length n)
+       (cond
+         [(or (>= n (length m))
+              (not (list-ref m n)))
+          0]
+         [else
+          (string-length (list-ref m n))]))
+       
      (define l (string-length (car m)))
      (define p (size->path-length (current-size)))
-     (if (= l p)
-         '#(1 1 1)
-         (vector
-          (if (>= (length m) 3) (/ (string-length (list-ref m 2)) p) 0)
-          (if (>= (length m) 2) (/ (string-length (list-ref m 1)) p) 0)
-          (if (>= (length m) 4) (/ (string-length (list-ref m 3)) p) 0))))
+     (cond
+       [(= l 0) '#(0 0 0)]
+       [(= l p) '#(1 1 1)]
+       [else
+        (vector (/ (nth-length 2) p)
+                (/ (nth-length 1) p)
+                (/ (nth-length 3) p))]))
    ; Color based on the most common number
    'common-voting
    (λ (m)
@@ -92,9 +101,9 @@
 
 (define all-regexes
   (hash
-   'sierpinski        #px".*1.*"
+   'sierpinski        #px"1"
    'four-corners      #px"((.)(\\2*))"
-   'left-right        #px"(1|2)"
+   'left-right        #px"^[34]*2(.*)"
    'jagged            #px"(12)"
    'double-sierpinski #px"(1.*2|2.*1)"
    'ones-then-twos    #px"^[34]*[134]*[34]*[234]*[34]*$"
@@ -111,11 +120,11 @@
    'spiky             #px"(12|23|34)"
    'sierpinski-nest   #px"4[^4][^4]2(.*)"
    ; https://imgur.com/a/QWMGi
-   'boxes             #px"(13|31|24|42)"
+   'more-boxes        #px"(13|31|24|42)"
    'boxes-remainder   #px"(?:13|31|24|42)(.*)"
    'squared-carpet    #px"(13|31)"
-   'outlined          #px"(1[124]|2[14]|5[12|31])*"
-   'figure-eights     #px"(?:..)*(?:[13][13]|[24][24])((?:..)*)"
+   'outlined          #px"^(1[124]|2[14]|4[12]|31)*$"
+   'figure-eights     #px"^(?:..)*(?:[13][13]|[24][24])((?:..)*)$"
    'scanlines         #px"^[13]*[24]*$"
    ))
 
@@ -125,9 +134,9 @@
          [mode                     (in-list '(short full))]
          [(coloring-name coloring) (in-hash all-colorings)]
          [size                     (in-list (if (list? sizes) sizes (list sizes)))])
-    (parameterize ([current-size size]
+    (parameterize ([current-size     size]
                    [current-coloring coloring]
-                   [current-mode mode])
+                   [current-mode     mode])
       
       (define path 
         (build-path folder 
