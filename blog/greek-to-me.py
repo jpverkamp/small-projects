@@ -68,20 +68,48 @@ def reorder(cycle):
     return cycle
 
 seen = set()
+cycles = []
 
 for src in pairs.keys():
     for result in cycle(src, [src]):
         result = reorder(result)
         if not str(result) in seen:
+            cycles.append(result)
             print(result)
             seen.add(str(result))
 
 # --- Render a nice graph ---
 
 g = graphviz.Digraph()
+
+for src in pairs.keys():
+    # Does this node lead to another
+    has_out = pairs[src]
+
+    # Does any node lead to this one
+    has_in = False
+    for dst in pairs.keys():
+        if src in pairs[dst]:
+            has_in = True
+            break
+
+    # If both, color it
+    if has_out and has_in:
+        g.node(src, color = 'blue')
+
+# Get all edges that are part of a cycle
+cycle_edges = set()
+for cycle in cycles:
+    for src, dst in zip(cycle, cycle[1:]):
+        cycle_edges.add((src, dst))
+    cycle_edges.add((cycle[-1], cycle[0]))
+
 for src in pairs.keys():
     for dst in pairs[src]:
-        g.edge(src, dst)
+        if (src, dst) in cycle_edges:
+            g.edge(src, dst, color = 'blue')
+        else:
+            g.edge(src, dst)
 
 g.graph_attr['overlap'] = 'false'
 g.graph_attr['splines'] = 'true'
