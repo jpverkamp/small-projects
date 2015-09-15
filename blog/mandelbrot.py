@@ -2,6 +2,7 @@
 
 import cmath
 import multiprocessing
+import os
 import PIL.Image
 import random
 import time
@@ -78,11 +79,19 @@ def make_mandelbrot_generator(width, height, center, size, max_iterations = 256,
     coloring -- takes a value [0, 1.0] (what percent of max_iterations before diverging and returns (r, g, b)
     '''
 
+    # Scale the size so that is the size of the larger dimension
+    if width >= height:
+        size_x = size
+        size_y = size * height / width
+    else:
+        size_x = size * width / height
+        size_y = size
+
     # Convert to a bounding box
-    min_x = center[0] - size / 2
-    max_x = center[0] + size / 2
-    min_y = center[1] - size / 2
-    max_y = center[1] + size / 2
+    min_x = center[0] - size_x / 2
+    max_x = center[0] + size_x / 2
+    min_y = center[1] - size_y / 2
+    max_y = center[1] + size_y / 2
 
     def generator(x, y):
         # Scale to the mandlebrot frame; convert to a complex number
@@ -110,14 +119,13 @@ def make_mandelbrot_generator(width, height, center, size, max_iterations = 256,
 THREAD_COUNT = max(1, multiprocessing.cpu_count() - 1)
 
 SIZES = [
-    #(400, 300),
+    (400, 300),
     (1920, 1080)
 ]
 
 COLORINGS = [
-    #('grayscale', grayscale),
+    ('grayscale', grayscale),
     ('hot-and-cold', hot_and_cold),
-    #('noise', noise),
 ]
 
 IMAGES = [
@@ -134,7 +142,8 @@ IMAGES = [
 for width, height in SIZES:
     for image_name, center, size in IMAGES:
         for coloring_name, coloring in COLORINGS:
-            filename = 'mandelbrot_{name}_{width}x{height}_{coloring}.png'.format(
+            filename = os.path.join('{width}x{height}', 'mandelbrot_{name}_{width}x{height}_{coloring}.png')
+            filename = filename.format(
                 name = image_name,
                 width = width,
                 height = height,
@@ -150,6 +159,9 @@ for width, height in SIZES:
                 threads = THREAD_COUNT
             )
             end = time.time()
+
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
             img.save(filename)
 
             print('{} generated in {} seconds with {} threads'.format(
