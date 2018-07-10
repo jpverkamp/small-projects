@@ -23,7 +23,8 @@
 ; Fetch pages from Wikipedia, caching them to disk
 (define (get-page title [skip-cache #f])
   ; If the file isn't cached, fetch it
-  (define path (build-path cache (format "~a.json" title)))
+  (define clean-title (regexp-replace* #rx"[^a-zA-Z0-9._-]+" title "-"))
+  (define path (build-path cache (format "~a.json" clean-title)))
   (when (or skip-cache (not (file-exists? path)))
     (define url (string->url (format wikipedia-api-url title)))
     (define http-in (get-pure-port url #:redirections 3))
@@ -40,7 +41,12 @@
 (define (get-first-page-content page)
   (define page-keys (hash-keys (hash-ref (hash-ref page 'query) 'pages)))
   (define content (hash-ref (hash-ref (hash-ref page 'query) 'pages) (car page-keys)))
-  (hash-ref (car (hash-ref content 'revisions)) '*))
+  (cond
+    [(hash-has-key? content 'missing)
+     (debug-printf "[DEBUG] missing content detected, skipping\n")
+     ""]
+    [else
+     (hash-ref (car (hash-ref content 'revisions)) '*)]))
 
 ; Filter out any links in the page that are in paranthesis, italics, or tables
 ; Return a list of all remaining internal links
